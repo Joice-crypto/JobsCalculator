@@ -6,6 +6,9 @@ const routes = require('./routes');
 
 server.set('view engine', 'ejs');
 
+// liberar o req.body 
+server.use(express.urlencoded({extend : true}));
+
 // habilitar arquivos estaticos
 server.use(express.static("public"));
 server.use(routes);
