@@ -1,63 +1,151 @@
-const { req, res } = require('express'); //biblioteca para criar o servidor 
+const {
+    req,
+    res
+} = require('express'); //biblioteca para criar o servidor 
 const express = require('express');
 const routes = express.Router()
 
 const views = __dirname + '/views/'
 
-const profile = {
+const Profile = {
 
-    name: "Joice",
-    avatar: 'https://avatars.githubusercontent.com/u/66541373?v=4',
-    monthlybudget: 3000,
-    "days-per-week": 5,
-    "hours-per-day": 5,
-    "vocation-per-year": 4
-}
+    data: {
+        
 
-/* {
-  name: 'Joice Cristiana da Silva Santos',
-  'daily-hours': '0.4',
-  'total-hours': '3'
-}
-*/
-const jobs = [
-    {
-        id:1,
-        name: 'Pizzaria Guloso',
-        "daily-hours": 2,
-        "total-hours": 60,
-        created_at:Date.now ()
+            name: "Joice",
+            avatar: 'https://avatars.githubusercontent.com/u/66541373?v=4',
+            monthlybudget: 3000,
+            "days-per-week": 5,
+            "hours-per-day": 5,
+            "vocation-per-year": 4,
+            "value-hour": 75
+        
     },
+    controllers: {
 
-   { id:2,
-        name: 'OneTwo Project',
-        "daily-hours": 3,
-        "total-hours": 47,
-        created_at: Date.now ()
-   }
-]
+        index(req, res){
 
-// req e res
-routes.get('/',(req, res) => res.render( views +'index', {jobs}));
-routes.get('/job',(req, res) => res.render( views +'job'));
-routes.post('/job',(req, res) => {
+           return res.render(views + 'profile', { profile: Profile.data})
 
-    const lastId = jobs[jobs.length - 1]?.id || 1; // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
 
-  
-    jobs.push({
+        },
+        update () {
+
+
+
+
+
+        }
+
+    }
+
+
+}
+
+const Job = {
+
+    data: [
+        {
+            id: 1,
+            name: 'Pizzaria Guloso',
+            "daily-hours": 2,
+            "total-hours": 1,
+            created_at: Date.now()
+        },
+    
+        {
+            id: 2,
+            name: 'OneTwo Project',
+            "daily-hours": 3,
+            "total-hours": 47,
+            created_at: Date.now()
+        }
+
+    ],
+    controllers: {
+        index(req, res) {
+
+
+            const updatedJobs = Job.data.map((job) => {
+                // calculo de tempo restante 
+                //ajustes no job   
+
+                const remaining = Job.services.remainingDays(job);
+                const status = remaining <= 0 ? 'done' : 'progress' // se o remaining for menor ou igual a zero entao vai ser done se nao vai ser progress no status
+
+                return {
+                    //pega o job e espalha ele com o remaning, status e budget dentro
+                    ...job,
+                    remaining,
+                    status,
+                    budget: Profile.data["value-hour"] * job["total-hours"]
+
+                }
+            })
+
+
+            return res.render(views + 'index', {
+                jobs: updatedJobs
+            })
+
+
+        },
+
+        create(req, res) {
+
+            return res.render(views + "job")
+
+        },
+    
+        save(req, res){
+
+            const lastId = Job.data[Job.data.length - 1] ?.id || 1 // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
+
+
+         Job.data.push({
         id: lastId + 1,
-        name:req.body.name,
+        name: req.body.name,
         "daily-hours": req.body["daily-hours"],
         "total-hours": req.body["total-hours"],
         created_at: Date.now // Atribuindo a data de hoje
 
-    })  // vai empurrar o req body para a minha const jobs
-    return res.redirect('/')       
-
-});
-routes.get('/job/edit',(req, res) => res.render(views + 'job-edit'));
-routes.get('/profile',(req, res) => res.render(views + 'profile', {profile}));
+            }) // vai empurrar o req body para a minha const jobs
+        return res.redirect('/')
 
 
-module.exports = routes;  
+        }
+    },
+    services: {
+        remainingDays(job) {
+
+            const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed() // faz o calculo de dias restantes do job
+            const createdDate = new Date(job.created_at) // pegar a data de criação do job
+            const dueDay = createdDate.getDate() + Number(remainingDays) // pega a data do jobe  soma com os dias restantes para devolver a data do vencimento do job 
+            const dueDateInMs = createdDate.setDate(dueDay)
+        
+            const timeDiffInMs = dueDateInMs - Date.now() // pega a data limite menos a data de hoje
+        
+            // transform milliseconds in days
+            const dayInMs = 1000 * 60 * 60 * 24
+        
+            const dayDiff = Math.floor(timeDiffInMs / dayInMs)
+        
+        
+            return dayDiff //restam x dias
+        
+        
+        }
+    }
+}
+
+ 
+
+// req e res
+routes.get('/', Job.controllers.index)
+routes.get('/job',  Job.controllers.create);
+routes.post('/job', Job.controllers.save)
+routes.get('/job/edit', (req, res) => res.render(views + 'job-edit'));
+routes.get('/profile', Profile.controllers.index);
+
+
+module.exports = routes;
