@@ -29,12 +29,32 @@ const Profile = {
 
 
         },
-        update () {
+        update (req,res) {
+
+            const data = req.body
+
+            //definir quantas semanas tem em 1 ano (52)
+            const weeksPerYear = 52;
+            // remover as semanas de ferias que eu tiro no ano
+            const weeksPerMonth = (weeksPerYear - data["vocation-per-year"]) / 12 
+            // total de horas trabalhadas na semana
+            const weekTotalHours = data["hours-per-day"] * data["days-per-week"]
 
 
+            // horas trabalhadas no mês 
+            const monthlyTotalHours = weekTotalHours * weeksPerMonth 
+            // valor da minha hora
+          const valueHour =  Number(data["value-hour"] = data["monthlybudget"] / monthlyTotalHours)
 
+          Profile.data = {
 
+            ...Profile.data,
+            ...req.body,
+            "value-hour": valueHour
 
+          }
+
+          return res.redirect('/profile');
         }
 
     }
@@ -113,6 +133,10 @@ const Job = {
         return res.redirect('/')
 
 
+        },
+        update(req, res){
+
+            
         }
     },
     services: {
@@ -146,6 +170,6 @@ routes.get('/job',  Job.controllers.create);
 routes.post('/job', Job.controllers.save)
 routes.get('/job/edit', (req, res) => res.render(views + 'job-edit'));
 routes.get('/profile', Profile.controllers.index);
-
+routes.post('/profile', Profile.controllers.update);
 
 module.exports = routes;
