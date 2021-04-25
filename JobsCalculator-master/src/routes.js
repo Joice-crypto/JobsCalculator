@@ -1,3 +1,7 @@
+
+// MAP,FOREACH,FIND,FILTER
+
+
 const {
     req,
     res
@@ -70,7 +74,8 @@ const Job = {
             name: 'Pizzaria Guloso',
             "daily-hours": 2,
             "total-hours": 1,
-            created_at: Date.now()
+            created_at: Date.now(),
+            budget:4500 
         },
     
         {
@@ -78,7 +83,8 @@ const Job = {
             name: 'OneTwo Project',
             "daily-hours": 3,
             "total-hours": 47,
-            created_at: Date.now()
+            created_at: Date.now(),
+            budget: 4500
         }
 
     ],
@@ -98,8 +104,7 @@ const Job = {
                     ...job,
                     remaining,
                     status,
-                    budget: Profile.data["value-hour"] * job["total-hours"]
-
+                    budget: Job.services.calculateBudget(job, Profile.data["value-hour"])
                 }
             })
 
@@ -110,16 +115,14 @@ const Job = {
 
 
         },
-
         create(req, res) {
 
             return res.render(views + "job")
 
         },
-    
         save(req, res){
 
-            const lastId = Job.data[Job.data.length - 1] ?.id || 1 // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
+            const lastId = Job.data[Job.data.length - 1]?.id || 0 // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
 
 
          Job.data.push({
@@ -134,9 +137,62 @@ const Job = {
 
 
         },
-        update(req, res){
+        show (req, res){
 
-            
+            const jobId = req.params.id
+
+            const job = Job.data.find(job => Number(job.id) === Number(jobId)) // vai procurar o id no job e verificar se é igual
+
+            if(!job) // se nao tiver job 
+            {
+                return res.send("Job not found !")
+            }
+
+            job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"])
+
+            return res.render(views + "job-edit" , { job })
+
+      },
+         update (req, res){
+
+        const jobId = req.params.id // pega o numero do projeto pelo id
+
+        const job = Job.data.find(job => Number(job.id) === Number(jobId)) // vai procurar o id no job e verificar se é igual
+
+        if(!job) // se nao tiver job 
+        {
+            return res.send("Job not found !")
+        }
+
+        const updatedJob = {
+
+            ...job,
+            name:req.body.name,
+            "total-hours":job["total-hours"],
+            "daily-hours":job["daily-hours"]
+
+
+        }
+
+        Job.data = Job.data.map(job => {
+
+            if(Number(job.id)=== Number(jobId)){
+
+                job = updatedJob
+            }
+
+            return job
+        })
+
+        res.redirect('/job/' + jobId)
+      },
+        delete (req,res){
+            const jobId = req.params.id
+
+                // vai procurar se o id é igual se for igual vai manter se for diferente vai deletar
+            Job.data = Job.data.filter(job => Number(job.id) !== Number(jobId))
+
+            return res.redirect('/')
         }
     },
     services: {
@@ -158,17 +214,22 @@ const Job = {
             return dayDiff //restam x dias
         
         
-        }
+        },
+        
+        calculateBudget: (job, valueHour) =>  valueHour * job["total-hours"]
+
     }
 }
 
  
 
 // req e res
-routes.get('/', Job.controllers.index)
+routes.get('/', Job.controllers.index);
 routes.get('/job',  Job.controllers.create);
-routes.post('/job', Job.controllers.save)
-routes.get('/job/edit', (req, res) => res.render(views + 'job-edit'));
+routes.post('/job', Job.controllers.save);
+routes.get('/job/:id', Job.controllers.show);
+routes.post('/job/:id', Job.controllers.update);
+routes.post('/job/delete/:id', Job.controllers.delete);
 routes.get('/profile', Profile.controllers.index);
 routes.post('/profile', Profile.controllers.update);
 
