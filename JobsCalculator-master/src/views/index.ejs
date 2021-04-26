@@ -36,8 +36,8 @@
           Você tem 2 horas livres no seu dia
         </span>
         <a href="/profile" id="avatar-profile">
-          <p>Joice <span>Ver perfil</span></p>
-          <img src="" />
+          <p> <%= profile.name %>  <span>Ver perfil</span></p>
+          <img src=" <%= profile.avatar %>  " />
         </a>
       </section>
 
@@ -48,7 +48,7 @@
 
         <div class="info">
           <div class="total">
-            <strong>12</strong>
+            <strong> <%= statusCount.total %> </strong>
             Projetos ao total
           </div>
           <div class="in-progress">
