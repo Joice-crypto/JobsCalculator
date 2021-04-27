@@ -9,21 +9,21 @@ module.exports = {
         return res.render("job")
 
     },
-    save(req, res) {
-
+    save(req, res) {   
+        
         const jobs = Job.get()
-
         const lastId = jobs[jobs.length - 1] ?.id || 0 // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
+        
 
-
-        jobs.push({
+        Job.create({
             id: lastId + 1,
             name: req.body.name,
             "daily-hours": req.body["daily-hours"],
             "total-hours": req.body["total-hours"],
             created_at: Date.now // Atribuindo a data de hoje
 
-        }) // vai empurrar o req body para a minha const jobs
+        });
+
         return res.redirect('/')
 
 
