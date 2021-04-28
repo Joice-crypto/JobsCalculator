@@ -1,86 +1,74 @@
-const Database = require('./config');
+const Database = require('./config')
 
-Database();
+const initDb = {
+   async init(){         
 
-Datababase.exec(`CREATE TABLE profile (
-         id INTEGER PRIMARY KEY,
-         name TEXT ,
-        avatar TEXT,
-        monthly_budget INT,
-        days_per_week INT,
-        hours_per_day INT,
-        vocation_per_year INT,
-        value_hour INT
+const db = await Database()
 
-    
-    
-    )`);
-Datababase.exec(`CREATE TABLE jobs (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        daily_hours INT,
-        total_hours INT,
-        created_at DATETIME ,
-       
+await db.exec(`CREATE TABLE profile (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT, 
+    avatar TEXT, 
+    monthly_budget INT, 
+    days_per_week INT,
+    hours_per_day INT,
+    vacation_per_year INT,
+    value_hour INT
+)`)
 
-   
-   
-   )`);
+await db.exec(`CREATE TABLE jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT, 
+    daily_hours INT,
+    total_hours INT,
+    created_at DATETIME
+)`)
 
-Database.run(
-    `INSERT INTO profile(
-        name,
-        monthly_budget,
-        days_per_week,
-        hours_per_day,
-        vocation_per_year,
-        value_hour
-    ) VALUES (
-        "Joice",
-        "https://avatars.githubusercontent.com/u/66541373?v=",
-        3000,
-        5,
-        5,
-        4,
-        75
-    
-    );` ) 
-
-Database.run(`INSERT INTO jobs(
-    name,
-    daily_hours,
-    tottal_hours,
-    created_at,  
-
-) VALUES (
-    "Pizzaria Gulosos",
-    2,
-    1,
-    1619491033403
-    
-
+await db.run(`INSERT INTO profile (
+    name, 
+    avatar, 
+    monthly_budget, 
+    days_per_week, 
+    hours_per_day, 
+    vacation_per_year,
+    value_hour
+ ) VALUES (
+     "Joice",
+    'https://avatars.githubusercontent.com/u/66541373?v=4',
+     3000,
+     5,
+     5,
+     4,
+     70
 );`)
 
-Database.run(`INSERT INTO jobs(
-    name,
+await db.run(`INSERT INTO jobs (
+    name, 
     daily_hours,
-    tottal_hours,
-    created_at,  
+    total_hours,
+    created_at
+) VALUES (
+    "Pizzaria Guloso",
+    2,
+    1,
+    1617514376018
+);`)
 
+await db.run(`INSERT INTO jobs (
+    name, 
+    daily_hours,
+    total_hours,
+    created_at
 ) VALUES (
     "OneTwo Projects",
     3,
     47,
-    1619491033403
-    
-
+    1617514376018
 );`)
 
+await db.close()
+    }
+}
 
 
-Database.close();
-
-
-
-
-
+initDb.init()

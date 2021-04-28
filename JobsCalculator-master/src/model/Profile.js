@@ -1,23 +1,30 @@
-let data = {
+const Database = require('../db/config');
 
 
-        name: "Joice",
-        avatar: 'https://avatars.githubusercontent.com/u/66541373?v=4',
-        monthlybudget: 3000,
-        "days-per-week": 5,
-        "hours-per-day": 5,
-        "vocation-per-year": 4,
-        "value-hour": 75
+module.exports = {
 
-    };
+    async get() {
+        const db = await Database()
+        const data = await db.get(`SELECT * FROM profile`) // o get pea so 1 dado do bd
 
-    module.exports = {
 
-        get(){
-            return data;
-        },
-        update(newData){
 
-            data = newData;
-        }
+
+        await db.close()
+
+        return {
+            name: data.name,
+            avatar: data.avatar,
+            "monthly-budget": data.monthly_budget,
+            "days-per-week": data.days_per_week,
+            "hours-per-day": data.hours_per_day,
+            "vacation-per-year": data.vacation_per_year,
+            "value-hour": data.value_hour,
+
+        };
+    },
+    update(newData) {
+
+        data = newData;
     }
+}
