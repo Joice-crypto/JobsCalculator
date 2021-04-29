@@ -8,7 +8,7 @@ const Profile = require('../model/Profile');
 module.exports = {
   async  index(req, res) {
 
-        const jobs = Job.get();
+        const jobs = await Job.get();
         const profile = await Profile.get();
 
         let statusCount = {

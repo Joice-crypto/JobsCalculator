@@ -1,95 +1,59 @@
-const Job = require('../model/Job');
-const JobUtils = require('../Utils/jobUtils');
-const Profile = require('../model/Profile');
+const Job = require('../model/Job')
+const JobUtils = require('../Utils/jobUtils')
+const Profile = require('../model/Profile')
 
 module.exports = {
-
     create(req, res) {
-
-        return res.render("job")
-
+      return res.render("job")
     },
-    save(req, res) {   
-        
-        const jobs = Job.get()
-        const lastId = jobs[jobs.length - 1] ?.id || 0 // vai pegar o jobs length e subtrair 1 posição porem se for o primeiro job vai colocar o id 1
-        
 
-        Job.create({
-            id: lastId + 1,
-            name: req.body.name,
-            "daily-hours": req.body["daily-hours"],
-            "total-hours": req.body["total-hours"],
-            created_at: Date.now // Atribuindo a data de hoje
+    async save(req, res) {
+      await Job.create({
+        name: req.body.name,
+        "daily-hours": req.body["daily-hours"], 
+        "total-hours": req.body["total-hours"], 
+        created_at: Date.now()
+      });     
 
-        });
-
-        return res.redirect('/')
-
-
+      return res.redirect('/')
     },
-    show(req, res) {
 
-        const jobs = Job.get();
-        const jobId = req.params.id
+    async show(req, res) {
+      const jobId = req.params.id
+      const jobs = await Job.get()
 
-        const job = jobs.find(job => Number(job.id) === Number(jobId)) // vai procurar o id no job e verificar se é igual
+      const job = jobs.find(job => Number(job.id) === Number(jobId))
 
-        if (!job) // se nao tiver job 
-        {
-            return res.send("Job not found !")
-        }
+      if (!job) {
+        return res.send('Job not found!')
+      }
 
-        const profile = Profile.get();
-        job.budget = JobUtils.calculateBudget(job, profile["value-hour"])
+      const profile = await Profile.get()
 
-        return res.render("job-edit", {
-            job
-        })
+      job.budget = JobUtils.calculateBudget(job, profile["value-hour"])
 
+      return res.render("job-edit", { job })
     },
-    update(req, res) {
 
-        const jobs = Job.get();
+    async update(req, res) {
+      const jobId = req.params.id
 
-        const jobId = req.params.id // pega o numero do projeto pelo id
+      const updatedJob = {
+        name: req.body.name,
+        "total-hours": req.body["total-hours"], 
+        "daily-hours": req.body["daily-hours"], 
+      }      
 
-        const job = jobs.find(job => Number(job.id) === Number(jobId)) // vai procurar o id no job e verificar se é igual
+      await Job.update(updatedJob, jobId)
 
-        if (!job) // se nao tiver job 
-        {
-            return res.send("Job not found !")
-        }
-
-        const updatedJob = {
-
-            ...job,
-            name: req.body.name,
-            "total-hours": job["total-hours"],
-            "daily-hours": job["daily-hours"]
-
-
-        }
-
-        const newJobs = jobs.map(job => {
-
-            if (Number(job.id) === Number(jobId)) {
-
-                job = updatedJob
-            }
-
-            return job
-        })
-
-        Job.update(newJobs);
-
-        res.redirect('/job/' + jobId)
+      res.redirect('/job/' + jobId)
     },
-    delete(req, res) {
-        const jobId = req.params.id
 
-        Job.delete(jobId);
+    async delete(req, res) {
+      const jobId = req.params.id
 
-        return res.redirect('/')
+      await Job.delete(jobId)
+      
+      return res.redirect('/')
     }
-}
+  }
